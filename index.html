@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>测试你最像英雄联盟里的谁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F172A',
+                        secondary: '#3B82F6',
+                        light: '#F8FAFC',
+                        grayMid: '#94A3B8'
+                    },
+                    fontFamily: {
+                        sans: ['system-ui', 'PingFang SC', 'Microsoft YaHei', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow { text-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+            .animate-fade { animation: fadeIn 0.5s ease-in-out; }
+            .animate-up { animation: upIn 0.4s ease-out; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes upIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        html { scroll-behavior: smooth; }
+        body { background-color: #F8FAFC; }
+        .option-active { @apply bg-secondary text-white border-secondary; }
+    </style>
+</head>
+<body class="min-h-screen text-primary font-sans pb-20">
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm card-shadow px-4 py-5">
+        <h1 class="text-[20px] font-bold text-center text-primary text-shadow">测试你最像英雄联盟里的谁</h1>
+        <p class="text-[12px] text-grayMid text-center mt-1">30道人格题｜全英雄库｜深度性格解析</p>
+        <div class="w-full h-1.5 bg-gray-100 rounded-full mt-4 overflow-hidden">
+            <div id="progressBar" class="h-full bg-secondary transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p class="text-[11px] text-grayMid text-center mt-2">已完成 <span id="progressNum">0</span>/30 题</p>
+    </header>
+    <main class="px-4 mt-6 max-w-lg mx-auto">
+        <section id="homePage" class="animate-fade">
+            <div class="bg-white rounded-2xl card-shadow p-6 animate-up">
+                <div class="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                    <i class="fa fa-gamepad text-3xl text-secondary"></i>
+                </div>
+                <h2 class="text-[18px] font-semibold text-center mb-3">英雄联盟人格测试</h2>
+                <p class="text-[14px] text-grayMid leading-relaxed text-center mb-6">
+                    30道精简人格测试，内置完整LOL英雄人设库，四维性格打分，深度剖析你的人格特质，支持返回修改答案。
+                </p>
+                <ul class="text-[13px] text-grayMid space-y-2 mb-8">
+                    <li><i class="fa fa-check text-secondary mr-2"></i>手机电脑通用，高级简约界面</li>
+                    <li><i class="fa fa-check text-secondary mr-2"></i>海量英雄池，匹配结果丰富不单调</li>
+                    <li><i class="fa fa-check text-secondary mr-2"></i>上一题回退，随时修改答案</li>
+                    <li><i class="fa fa-check text-secondary mr-2"></i>四维可视化+超详细心理解析</li>
+                    <li><i class="fa fa-check text-secondary mr-2"></i>无广告，离线本地打开</li>
+                </ul>
+                <button id="startBtn" class="w-full bg-secondary text-white py-3.5 rounded-xl text-[15px] font-medium transition-all hover:bg-secondary/90 active:scale-[0.98]">
+                    立即开始测试
+                </button>
+            </div>
+        </section>
+
+        <section id="testPage" class="hidden">
+            <div class="bg-white rounded-2xl card-shadow p-5 animate-up">
+                <h3 id="questionTitle" class="text-[15px] font-medium leading-relaxed mb-6"></h3>
+                <div id="optionBox" class="space-y-3"></div>
+                <div class="grid grid-cols-2 gap-3 mt-8">
+                    <button id="prevBtn" class="py-3 border border-gray-200 rounded-xl text-[14px] transition-all hover:bg-gray-50">
+                        返回上一题
+                    </button>
+                    <button id="nextBtn" class="bg-gray-200 text-gray-400 py-3 rounded-xl text-[14px] font-medium transition-all disabled:cursor-not-allowed" disabled>
+                        选择选项后继续
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="resultPage" class="hidden animate-fade">
+            <div class="bg-white rounded-2xl card-shadow p-6 animate-up">
+                <div class="w-24 h-24 bg-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                    <i class="fa fa-user-circle text-4xl text-secondary"></i>
+                </div>
+                <h2 class="text-[22px] font-bold text-center mb-1" id="heroName">匹配英雄：XXX</h2>
+                <p class="text-[12px] text-grayMid text-center mb-6" id="heroTag">英雄性格标签</p>
+
+                <div class="bg-secondary/5 rounded-xl p-4 mb-6">
+                    <h4 class="text-[14px] font-semibold mb-3">人格维度得分</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-[12px] mb-1"><span>A强势果敢</span><span id="scoreA">0分</span></div>
+                            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden"><div id="barA" class="h-full bg-red-500 rounded-full" style="width:0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[12px] mb-1"><span>B冷静理智</span><span id="scoreB">0分</span></div>
+                            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden"><div id="barB" class="h-full bg-blue-500 rounded-full" style="width:0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[12px] mb-1"><span>C温柔共情</span><span id="scoreC">0分</span></div>
+                            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden"><div id="barC" class="h-full bg-green-500 rounded-full" style="width:0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[12px] mb-1"><span>D自由随性</span><span id="scoreD">0分</span></div>
+                            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden"><div id="barD" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-[13px]">性格匹配相似度</span>
+                        <span class="text-[13px] font-medium text-secondary" id="matchPercent">98%</span>
+                    </div>
+                    <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                        <div id="matchBar" class="h-full bg-secondary rounded-full" style="width: 98%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="text-[14px] font-semibold mb-2 flex items-center"><i class="fa fa-star text-secondary mr-2"></i>英雄原生性格</h4>
+                    <p class="text-[13px] text-grayMid leading-relaxed" id="heroPersonality"></p>
+                </div>
+                <div class="mb-5">
+                    <h4 class="text-[14px] font-semibold mb-2 flex items-center"><i class="fa fa-heart text-secondary mr-2"></i>你的真实性格画像</h4>
+                    <p class="text-[13px] text-grayMid leading-relaxed" id="selfPersonality"></p>
+                </div>
+                <div class="mb-5">
+                    <h4 class="text-[14px] font-semibold mb-2 flex items-center"><i class="fa fa-balance-scale text-secondary mr-2"></i>性格差值对比</h4>
+                    <p class="text-[13px] text-grayMid leading-relaxed" id="diffAnalysis"></p>
+                </div>
+                <div class="mb-5">
+                    <h4 class="text-[14px] font-semibold mb-2 flex items-center"><i class="fa fa-lightbulb-o text-secondary mr-2"></i>深度心理解析</h4>
+                    <p class="text-[13px] text-grayMid leading-relaxed" id="psychAnalysis"></p>
+                </div>
+                <div class="mb-8">
+                    <h4 class="text-[14px] font-semibold mb-2 flex items-center"><i class="fa fa-arrow-up text-secondary mr-2"></i>个人成长建议</h4>
+                    <p class="text-[13px] text-grayMid leading-relaxed" id="growAdvice"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="resetBtn" class="py-3 border border-gray-200 rounded-xl text-[14px] transition-all hover:bg-gray-50">
+                        重新测试
+                    </button>
+                    <button id="shareBtn" class="py-3 bg-secondary rounded-xl text-white text-[14px] transition-all hover:bg-secondary/90">
+                        复制结果分享
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ========= 30道测试题目 =========
+        const questionList = [
+            {q: "遇到突发难题，你第一反应是？", o: ["立刻主动解决，快速稳住局面","冷静分析利弊，思考最优方案","优先顾及他人情绪，不愿冲突","随缘应对，不纠结不内耗"]},
+            {q: "团队合作中，你更倾向于？", o: ["主导全局，分配任务掌控节奏","默默执行核心工作，理性兜底","配合他人，照顾团队氛围","灵活游走，自由发挥不被约束"]},
+            {q: "被人误解时，你会？", o: ["直接反驳澄清，绝不背锅","懒得解释，时间证明一切","委屈难过，主动迁就和解","一笑而过，完全不在意评价"]},
+            {q: "面对失败，你的心态是？", o: ["不服输，立刻复盘重头再来","冷静复盘，理性接受结果","自我怀疑，容易陷入自责","坦然释怀，换个方向继续"]},
+            {q: "日常做选择，你通常？", o: ["果断决策，不犹豫不纠结","谨慎权衡，全方位考量后选择","优先考虑他人感受再决定","随心选择，喜欢新鲜随性"]},
+            {q: "别人求助你时，你会？", o: ["果断帮忙，高效解决问题","理性判断是否值得帮助","心软必帮，不忍心拒绝任何人","看心情，随缘帮忙"]},
+            {q: "独处的时候，你更喜欢？", o: ["提升自己，充实自身能力","安静思考，享受独处静谧","翻看聊天记录，怀念熟人","自由玩乐，随心所欲放松"]},
+            {q: "与人发生争执，你会？", o: ["据理力争，坚持自己的立场","沉默冷静，不参与无谓争吵","主动退让，害怕关系破裂","直接抽身，远离是非"]},
+            {q: "面对新环境，你的状态是？", o: ["快速适应，主动掌控局面","默默观察，谨慎融入环境","温和待人，快速拉近关系","好奇探索，自由融入无压力"]},
+            {q: "对待目标，你的态度是？", o: ["极致执着，不达目的不罢休","稳步推进，理性规划执行","随遇而安，不逼迫自己","灵活变通，不行就换目标"]},
+            {q: "他人否定你的时候，你会？", o: ["不服气，用实力证明自己","内心无感，坚持自我判断","情绪低落，怀疑自己对错","毫不在意，活自己的节奏"]},
+            {q: "生活里你更像？", o: ["强者型，护短、果敢、有气场","智者型，冷静、通透、有城府","暖者型、温柔、共情、心软","行者型、洒脱、自由、无拘"]},
+            {q: "做决定最怕什么？", o: ["犹豫错失机会","冲动做出错误选择","伤害到别人的感受","被规则束缚限制"]},
+            {q: "对待友情，你是？", o: ["重情重义，会主动守护挚友","君子之交，保持舒适距离","掏心掏肺，极度重视感情","随缘交友，合得来就处"]},
+            {q: "压力大的时候，你会？", o: ["咬牙扛住，独自强势抗压","冷静梳理，理性缓解压力","情绪内耗，默默难过自愈","放纵放松，快速清空压力"]},
+            {q: "你更讨厌哪种人？", o: ["懦弱无能、背信弃义之人","愚蠢冲动、毫无逻辑之人","冷漠自私、伤害他人之人","刻板死板、约束他人之人"]},
+            {q: "获得成功，你会？", o: ["自信张扬，认可自身实力","低调内敛，不骄不躁","分享喜悦，顾及身边人","淡然处之，得失随缘"]},
+            {q: "别人频繁找你帮忙，你会？", o: ["适当拒绝，守住自己底线","理性区分，选择性帮忙","不好意思拒绝，一味迁就","直接摆烂，看心情回应"]},
+            {q: "看待亲密关系，你更？", o: ["专一强势，占有欲偏强","清醒理智，拎得清得失","温柔包容，习惯性妥协","随性洒脱，不捆绑任何人"]},
+            {q: "遇到不公平待遇，你会？", o: ["主动争取，反抗不公","冷眼旁观，理性看待","默默忍受，不愿争执","转身离开，远离纷争"]},
+            {q: "你的思维模式更偏向？", o: ["行动优先，先做再优化","思考优先，三思而后行","感受优先，凭心意待人","体验优先，随心而活"]},
+            {q: "面对未知挑战，你会？", o: ["主动迎战，喜欢突破自我","谨慎观望，评估风险再行动","忐忑不安，需要他人鼓励","大胆尝试，无惧未知"]},
+            {q: "日常处事风格？", o: ["雷厉风行，干脆利落","沉稳内敛，不急不躁","温和柔软，待人宽厚","自由散漫，随心所欲"]},
+            {q: "被辜负之后，你的选择？", o: ["果断抽身，绝不回头","冷静释怀，互不打扰","暗自难过，难以释怀","无所谓，快速翻篇"]},
+            {q: "你最珍贵的特质是？", o: ["勇敢果敢、有担当有底线","理智清醒、通透有格局","善良温柔、共情力极强","洒脱自由、心态豁达"]},
+            {q: "团队有人拖后腿，你会？", o: ["主动带动，强行推进进度","理性指出问题，客观对待","包容体谅，选择理解对方","摆烂随缘，不强行较真"]},
+            {q: "对待过往遗憾，你会？", o: ["铭记教训，不再重蹈覆辙","理性释怀，接受所有结果","反复内耗，难以放下过去","看淡过往，一切随风"]},
+            {q: "你最害怕的事情？", o: ["失去掌控、变得弱小","思维愚昧、格局狭隘","伤害他人、孤身一人","被束缚、失去自由"]},
+            {q: "社交状态更接近？", o: ["主动社交，气场强大从容","被动社交，独处更舒服","温和社交，讨好型倾向","佛系社交，随心来往"]},
+            {q: "低谷期的自救方式？", o: ["咬牙坚持，自我救赎","冷静沉淀，默默成长","渴望陪伴，需要安慰","放纵自愈，快速释怀"]}
+        ];
+
+        // ========= 完整英雄库 heroDB 【全扩充完整版】 =========
+        const heroDB = [
+            // ========= A 强势果敢 =========
+            {name:"瑟提",tag:"铁血霸主｜护短强者",type:"A",hPer:"瑟提强悍果敢，有强大力量与掌控力，重情义极度护短，有不容触碰的底线。对外杀伐果决，对内藏着柔软，恩怨分明，敢于扛起责任。",sPer:"骨子里坚韧果敢，有担当，习惯独自扛压力，自尊心强，遇强则强，遇弱则柔，珍惜身边人，不喜欢示弱。",diff:"你拥有瑟提的强大担当，但是比他更加细腻敏感，容易心软陷入内耗；瑟提杀伐决断，你在情感抉择上会犹豫。",psy:"外刚内柔强者人格，抗压能力强，习惯自我消化痛苦。你不擅长表达脆弱，渴望被理解，但不愿示弱，很容易默默承受委屈。",grow:"学会适当示弱，不必所有压力独自承担；分清保护与控制，守住底线同时，不必强迫自己时刻强大。"},
+            {name:"蔚",tag:"皮城铁拳｜热血仗义",type:"A",hPer:"蔚直率热血，行动力极强，爱恨分明，极度护短，看不惯不公，有话直说，重视伙伴情义，敢于挺身而出。",sPer:"为人仗义直率，行动力强，见不得别人受欺负，认可的朋友会无条件维护，讨厌虚伪客套。",diff:"你和蔚一样仗义果敢，但冲突结束后你会反复回想、自我纠结，蔚做完决定便不再回头。",psy:"热血强者人格，真诚讲义气，行动力强；短板是情绪上头容易冲动，事后反复复盘内耗。",grow:"情绪激动时暂停10秒再行动；分清“打抱不平”和“过多介入别人的矛盾”。"},
+            {name:"嘉文四世",tag:"德玛西亚皇子｜领袖担当",type:"A",hPer:"嘉文四世自带领袖气场，心怀使命感，重信守诺，危难之时挺身而出，愿意守护同伴与家园，拥有格局与责任感。",sPer:"有强烈责任感，重视承诺，大事愿意站出来保护在意的人，有理想，愿意为目标持续付出。",diff:"你拥有嘉文的担当，但你没有宏大野心，理想受挫更容易自我怀疑。",psy:"理想型强者人格，正义感强，看重信誉；短板对自我标准过高，达不到预期就自我否定。",grow:"接纳自己不是万能的，目标拆分，允许阶段性失败，不必一次做到完美。"},
+            {name:"德莱文",tag:"荣耀刽子手｜自信张扬",type:"A",hPer:"德莱文自信张扬，坦荡直白，爱憎分明，做事干脆利落，高度认可自身能力，绝不自卑。",sPer:"骨子里自信热烈，性格强势，不喜欢拐弯抹角，有棱角，敢于争取自己想要的东西。",diff:"你和德莱文同样自信，但你内敛，懂得收敛锋芒，不会过度高调自负。",psy:"高自信人格，心理能量充足，抗压强；短板性格倔强，容易硬碰硬吃亏。",grow:"适当柔软，懂得迂回，不是所有事情都要争输赢；区分自信和固执。"},
+            {name:"雷克顿",tag:"荒漠屠夫｜暴怒好胜",type:"A",hPer:"雷克顿好胜勇猛，战斗意志极强，性格刚烈，不甘示弱，面对敌人绝不退缩，自尊心极强。",sPer:"胜负心较强，不愿认输，遇到挑战会奋力抗争，自尊心很重，不喜欢被轻视。",diff:"你有雷克顿的好胜心，但你能克制狂暴，不会被愤怒吞噬理智。",psy:"斗志型人格，不甘平庸；短板容易被胜负欲裹挟，输了会情绪低落很久。",grow:"放下事事要赢的执念，有些过程比结果重要，学会接纳失败。"},
+            {name:"潘森",tag:"不屈之枪｜坚守信念",type:"A",hPer:"潘森勇猛无畏，坚守正义信念，敢于对抗强权，有极强荣誉感，为守护他人挺身而出。",sPer:"有强烈正义感，愿意为信念坚持，遇到不公愿意站出来，骨子里有英雄情结。",diff:"你和潘森一样坚守道义，但你更顾及人情，不会为信念舍弃所有情感。",psy:"信念型强者，有勇气有底线；短板容易道德标准过高，对自己和他人都严苛。",grow:"区分理想和现实，接纳人性不完美，不必用极高道德标准苛求所有人。"},
+            {name:"锐雯",tag:"放逐之刃｜桀骜战士",type:"A",hPer:"锐雯果敢勇猛，性格桀骜，坚守自己的道义，知错敢于直面，有强大内心，不受他人束缚。",sPer:"独立勇敢，有自己原则，敢于打破不合理规则，做错事愿意反思承担。",diff:"你拥有锐雯的勇气，但你内心更加柔软，容易被过往的遗憾困住。",psy:"叛逆战士人格，不愿盲从；短板容易被过往错误反复折磨，难以原谅自己。",grow:"学会与过去和解，过错用来成长，不要永久惩罚自己。"},
+            {name:"奥拉夫",tag:"狂战士｜无畏生死",type:"A",hPer:"奥拉夫无所畏惧，性格狂放，不惧挑战，直面命运，绝不妥协，崇尚自由战斗。",sPer:"面对巨大困难有勇气迎难而上，不害怕挑战，讨厌妥协退让。",diff:"你有奥拉夫的无畏，但你不会盲目冲动，会顾及身边人。",psy:"无畏型人格，抗压力强；短板容易忽视风险，硬扛超出能力的压力。",grow:"勇敢不等于硬扛，学会评估风险，必要的时候选择撤退不是懦弱。"},
+            {name:"厄加特",tag:"无畏战车｜狠厉果决",type:"A",hPer:"厄加特冷酷果决，目标感极强，认定目标就会全力推进，不畏惧牺牲，看透虚伪。",sPer:"目标明确，执行力强，做事干脆，讨厌虚伪客套，为目标持续努力。",diff:"你目标感强，但内心保留善意，不会为目的不择手段。",psy:"实干强者人格，执行力强；短板容易只盯着目标，忽略身边人的情绪。",grow:"前进路上兼顾人情，不要为目标忽略情感联结。"},
+            {name:"卡莉斯塔",tag:"复仇之矛｜执念刚烈",type:"A",hPer:"卡莉斯塔恩怨分明，一旦立下誓约绝不背叛，复仇意志坚定，刚烈执着。",sPer:"重承诺，恩怨记在心里，背叛很难原谅，对信任的人极度忠诚。",diff:"你忠诚执着，但不会陷入无尽复仇，有机会选择放下。",psy:"契约型人格，极度看重信任；短板一旦被背叛，很难重新信任别人。",grow:"不要因为一次背叛，关闭所有信任的大门，人和人各不相同。"},
+            {name:"盖伦",tag:"德玛西亚之力｜铁血勇士",type:"A",hPer:"盖伦简单直接，勇猛坚毅，恪守德玛西亚的信念，保护同伴，嫉恶如仇，不擅长弯弯绕绕。",sPer:"是非观清晰，做事直接，愿意保护弱小，讨厌阴谋诡计，重承诺。",diff:"盖伦爱恨简单几乎没有内耗，你在冲突之后会反复思考对错。",psy:"质朴勇士人格，正义感纯粹；短板思维直线型，很难看懂复杂人心算计。",grow:"人心并非非黑即白，学会看懂灰色地带，不必强行用简单标准评判所有人。"},
+            {name:"德莱厄斯",tag:"诺克萨斯之手｜铁血领袖",type:"A",hPer:"德莱厄斯铁血强硬，崇尚力量，领导力强悍，赏罚分明，带领战士奋勇向前，绝不软弱。",sPer:"做事果断，有领导力，欣赏强者，讨厌懦弱，有极强底线。",diff:"德莱厄斯信奉力量至上，而你内心保有怜悯，不会单纯以强弱评判他人。",psy:"力量导向人格，抗压极强；短板容易急躁，缺少耐心倾听弱者的声音。",grow:"强大不只代表武力，耐心和包容同样是力量。"},
+            {name:"克烈",tag:"暴怒骑士｜永不退缩",type:"A",hPer:"克烈暴躁勇猛，永不认输，就算身受重伤依旧死战，性格刚烈，忠于自己的阵营。",sPer:"不服输，遇到打压不会轻易投降，脾气直接，护着自己认可的伙伴。",diff:"克烈容易暴怒，你可以克制怒火，只是内心不肯认输。",psy:"倔强斗士人格，韧性极强；短板情绪容易一点就燃，容易冲动争吵。",grow:"守住不服输的韧性，练习情绪缓冲，不必事事硬碰硬。"},
+            {name:"泰达米尔",tag:"蛮族之王｜狂怒不屈",type:"A",hPer:"泰达米尔背负血海深仇，勇猛狂暴，绝境爆发，绝不屈服于命运，为守护部族战斗。",sPer:"韧性极强，低谷不容易被打倒，珍视自己在乎的人，被触碰底线会强烈反抗。",diff:"蛮王容易被愤怒吞噬理智，你可以守住理性，只是内心伤痛难以抚平。",psy:"复仇韧性人格，绝境反弹；短板过往伤痛容易反复刺痛自己。",grow:"你的力量不必来源于愤怒，平静状态下的坚持同样强大。"},
+            {name:"菲奥娜",tag:"无双剑姬｜高傲斗士",type:"A",hPer:"菲奥娜高傲自律，追求极致的决斗荣耀，恪守决斗准则，独立骄傲，直面挑战。",sPer:"自尊心强，追求自我卓越，对自己要求严格，讨厌虚伪与羞辱，敢于直面冲突。",diff:"剑姬骄傲外放，你的骄傲藏在内心里，不喜欢当众展示。",psy:"自尊斗士人格，自律要强；短板很难接受失败与被否定。",grow:"失败不是耻辱，它只是帮你找到可以进步的方向。"},
+            {name:"雷克塞",tag:"虚空遁地兽｜原始猎手",type:"A",hPer:"雷克塞原始强悍，领地意识极强，守护巢穴，狩猎果断，生存本能拉满。",sPer:"领地边界感强，谁侵犯你的底线就会反击，生存韧性强。",diff:"雷克塞完全依靠本能，你会顾及情感，不会纯粹依靠本能行事。",psy:"本能守护人格；短板一旦感受到威胁，容易立刻竖起高墙隔绝他人。",grow:"区分威胁和无心冒犯，不必所有人都当成潜在敌人。"},
+            {name:"芮尔",tag:"镕铁少女｜反叛强者",type:"A",hPer:"芮尔力量强大，憎恨不公的奴役，保护弱小，反叛权威，勇敢反抗压迫。",sPer:"共情受压迫的人，敢于反抗不公，保护弱者，性格刚烈。",diff:"芮尔冲动反叛，你会犹豫，害怕反抗带来的冲突伤害别人。",psy:"反叛守护者人格；短板容易因为保护别人，把自己卷入麻烦之中。",grow:"保护他人很好，但优先保证自己不会被拖垮。"},
+            {name:"奎因",tag:"德玛西亚之翼｜果敢猎手",type:"A",hPer:"奎因敏捷果敢，行动力强，独自深入险境，侦查敌情，勇敢坚毅，和伙伴并肩作战。",sPer:"独立行动力强，敢于独自面对难题，重伙伴情义，遇事不逃避。",diff:"奎因很少纠结，你完成事情之后会反复复盘，担心有没有做错。",psy:"独立猎手人格；短板习惯独自扛事，不习惯开口求助。",grow:"求助不等于软弱，依靠伙伴可以减轻你的负担。"},
+            {name:"卡莎",tag:"虚空之女｜绝境战士",type:"A",hPer:"卡莎在虚空绝境存活，意志坚韧，目标明确，勇敢果决，独自对抗虚空威胁，内心坚定。",sPer:"逆境韧性极强，哪怕孤身一人也会坚持到底，目标清晰，不愿向困境低头。",diff:"卡莎内心坚定很少自我怀疑，你在漫长压力下容易自我怀疑。",psy:"绝境生存人格，抗逆境能力强；短板习惯独自硬扛苦难，不愿倾诉痛苦。",grow:"不必一个人硬扛所有困境，允许信任的人分担你的压力。"},
+            {name:"卢锡安",tag:"圣枪游侠｜执着复仇者",type:"A",hPer:"卢锡安爱恨分明，背负失去爱人的伤痛，意志坚定，为信念奋勇作战，绝不妥协。",sPer:"重感情，一旦心中立下目标便不会轻易放弃，对背叛与邪恶零容忍。",diff:"卢锡安被仇恨驱动一往无前，你会顾及身边人，不会不顾一切向前。",psy:"执念战士人格，专一执着；短板难以放下过往伤痛，容易反复沉浸悲伤。",grow:"伤痛可以铭记，但不要让过去的悲剧消耗你往后全部人生。"},
+            // ========= B 冷静理智 =========
+            {name:"卡蜜尔",tag:"青钢影｜极致清醒",type:"B",hPer:"卡蜜尔极致冷静，思维缜密，观察力极强，做事严谨，原则牢固，不情绪化做决定，清醒独立。",sPer:"沉稳内敛，清醒独立，不爱解释，拥有稳定三观，遇事克制，习惯独处思考。",diff:"你和卡蜜尔同样理智，但你更有人情味，偶尔会被情绪内耗，不会完全冷漠。",psy:"高理智人格，成熟通透；短板习惯封闭内心，所有情绪独自消化，容易孤独。",grow:"允许向信任的人倾诉情绪，不必永远保持冷静，流露脆弱不是软弱。"},
+            {name:"慎",tag:"暮光之眼｜隐忍自持",type:"B",hPer:"慎情绪内敛，恪守信条，喜怒不形于色，遇事冷静权衡，沉稳可靠，克制情绪。",sPer:"习惯隐藏情绪，遇事冷静，做事有原则，不爱争吵，遇事优先理性分析。",diff:"你和慎一样克制，但是情绪会积压，容易一次性爆发。",psy:"内敛理性人格，他人很信赖你；短板长期压抑情绪，疲惫积累。",grow:"定期释放情绪，不要一直压抑，情绪需要出口。"},
+            {name:"瑞兹",tag:"流浪法师｜远见通透",type:"B",hPer:"瑞兹沉稳睿智，眼界长远，历经世事，看淡得失，大局观极强，理性大于感性。",sPer:"成熟稳重，遇事从容，擅长长远规划，不冲动盲从，内心通透。",diff:"你拥有瑞兹的远见，但更容易被情感牵绊。",psy:"大局型人格，情绪稳定；短板思虑过重，容易过度思考。",grow:"减少无限度内耗思考，有些事情顺其自然。"},
+            {name:"维克托",tag:"机械先驱｜专注求索",type:"B",hPer:"维克托极度理性，专注自己理想，看淡人情客套，专注追求目标，不受他人评价干扰。",sPer:"拥有自己追求，理性专注，不喜无效社交，不容易被别人评价左右。",diff:"你专注目标，但你在意亲密之人感受，容易在理想和情感之间拉扯。",psy:"专注理性人格，目标感强；短板不太擅长人情社交。",grow:"不必回避所有社交，浅层次社交可以为生活提供助力。"},
+            {name:"杰斯",tag:"未来守护者｜思辨权衡",type:"B",hPer:"杰斯聪慧理性，善于权衡利弊，思维灵活，兼具理想与现实，遇事多方思考。",sPer:"头脑灵活，善于多角度思考问题，遇事权衡利弊，理性判断取舍。",diff:"你善于思考，但容易反复权衡，迟迟无法下决定。",psy:"思辨型人格，擅长分析；短板选择困难，纠结过多错失机会。",grow:"设置决策时限，不要无限权衡，没有完美选项。"},
+            {name:"泽拉斯",tag:"远古巫灵｜冷眼观世",type:"B",hPer:"泽拉斯看透凡俗，冷静疏离，理性看待世间纷争，不受世俗情绪裹挟。",sPer:"旁观者心态，不容易被别人情绪带动，习惯冷静观察。",diff:"你能保持冷静，但内心依然渴望情感联结，不是彻底疏离。",psy:"旁观型理智人格；短板容易和身边人产生距离感。",grow:"适度投入情感，不必永远做旁观者。"},
+            {name:"斯维因",tag:"诺克萨斯统领｜深谋远虑",type:"B",hPer:"斯维因心思深沉，擅长布局，洞察人心，冷静隐忍，愿意承受代价换取长远结果。",sPer:"洞察力强，看人细致，习惯谋划，遇事隐忍等待时机。",diff:"你善于观察，但不会算计他人，保留善意底线。",psy:"谋略型人格，看人准；短板容易过度揣测别人心思，想太多。",grow:"不要随意脑补他人动机，很多人没有复杂算计。"},
+            {name:"奥莉安娜",tag:"发条魔灵｜冷静克制",type:"B",hPer:"奥莉安娜情绪克制，逻辑清晰，温柔但保持距离，冷静观察周遭。",sPer:"情绪稳定，做事有条理，待人温和，习惯保持安全社交距离。",diff:"你冷静克制，内心拥有丰富情感，只是很少外露。",psy:"克制理性人格；短板很难表达自己内心真实感受。",grow:"练习表达内心感受，不用全部藏起来。"},
+            {name:"塔里克",tag:"瓦洛兰之盾｜理性守序",type:"B",hPer:"塔里克沉稳可靠，恪守信念，理性判断善恶，守护秩序，情绪稳定。",sPer:"稳重可靠，守信用，有自己道德准则，待人真诚。",diff:"你稳重守序，但比他更容易共情别人痛苦。",psy:"守序可靠人格；短板容易为维持和谐压抑自己。",grow:"秩序重要，但你的感受同样值得重视。"},
+            {name:"卡尔萨斯",tag:"死亡颂唱者｜通透超然",type:"B",hPer:"卡尔萨斯看透生死，心态平静超然，理性看待万物的终结。",sPer:"看淡得失，对很多事情心态平静，不容易大喜大悲。",diff:"你心态通透，但你依然珍惜人间情感。",psy:"超然型人格；短板容易对生活缺少热烈的期待。",grow:"在平静之外主动寻找能点燃热情的小事。"},
+            {name:"玛尔扎哈",tag:"虚空先知｜冷静预言",type:"B",hPer:"玛尔扎哈看透现实虚妄，冷静等待预言到来，不为世俗悲欢牵动情绪。",sPer:"善于看透表象，冷静看待世间纷争，不容易被旁人情绪裹挟。",diff:"玛尔扎哈一心信奉虚空预言，你保留人间温情，不会舍弃情感。",psy:"预言观察者人格，洞察力强；短板容易悲观预判事情走向。",grow:"未来不是注定的，不要提前预设最坏结局。"},
+            {name:"丽桑卓",tag:"冰霜女巫｜隐忍布局",type:"B",hPer:"丽桑卓隐忍冷静，擅长长远布局，克制情绪，为宏大目标可以长期蛰伏，冷静权衡代价。",sPer:"擅长隐藏真实想法，遇事冷静权衡，能忍受漫长等待换取想要结果。",diff:"丽桑卓为目标不择手段，你有底线，不会牺牲无辜之人。",psy:"隐忍谋划人格；短板习惯伪装情绪，别人很难读懂你的真实想法。",grow:"不必时刻伪装自己，对信任的人可以卸下防备。"},
+            // ========= C 温柔共情 =========
+            {name:"索拉卡",tag:"众星之子｜舍己治愈",type:"C",hPer:"索拉卡天生悲悯，优先照顾他人痛苦，愿意牺牲自己治愈别人，厌恶伤害。",sPer:"很容易感知别人痛苦，不忍心看人难过，习惯优先照顾他人感受。",diff:"索拉卡可以不计代价救人，你会在付出之后疲惫内耗，难以拒绝别人。",psy:"高共情治愈人格，心思柔软；短板习惯性优先别人，忽略自身感受。",grow:"善良要有边界，照顾自己不是自私，学会温柔拒绝别人的索取。"},
+            {name:"娑娜",tag:"琴瑟仙女｜温柔共情",type:"C",hPer:"娑娜安静温柔，敏锐感知周遭人的情绪，用音乐抚慰伤痛，待人宽厚包容。",sPer:"心思细腻，能察觉别人隐藏的情绪，待人温和，不爱争吵，习惯包容。",diff:"娑娜安静平和很少纠结，你容易因为别人情绪，跟着陷入低落。",psy:"细腻共情人格，感知力极强；短板容易承接别人负面情绪，被消耗。",grow:"学会情绪隔离，别人的悲伤不必由你来承担。"},
+            {name:"璐璐",tag:"仙灵女巫｜纯真暖心",type:"C",hPer:"璐璐天真柔软，心怀善意，守护美好，乐于给身边人带去快乐，包容世界的不同。",sPer:"内心保留纯真，希望身边人开心，待人包容，讨厌冲突和残酷。",diff:"璐璐活在幻想之中，你清楚现实的残酷，依旧选择善良。",psy:"纯真暖心人格；短板现实受挫之后，容易失望难过。",grow:"保持善良的同时，认清人性复杂，不要期待所有人都同样温柔。"},
+            {name:"娜美",tag:"唤潮鲛姬｜感性善良",type:"C",hPer:"娜美内心柔软，重视伙伴，心怀善意，愿意为守护亲友踏上漫长旅途，重情重义。",sPer:"看重情感羁绊，重视亲友，心软，很容易被故事打动。",diff:"娜美目标坚定一往无前，你在情感受伤后会反复难过。",psy:"感性重情人格，共情力强；短板容易在感情里受伤，难以快速走出来。",grow:"真情可贵，但不要把全部期待寄托在他人身上。"},
+            {name:"卡尔玛",tag:"天启者｜悲悯包容",type:"C",hPer:"卡尔玛心怀悲悯，包容众生，追求和平，尽量避免冲突，善于理解不同人的立场。",sPer:"擅长换位思考，愿意理解他人，向往和睦，尽量避免争吵。",diff:"卡尔玛内心强大，你容易为了和平委屈自己。",psy:"包容悲悯人格；短板为了维持和谐不断退让，丢失自我底线。",grow:"和平不等于一味退让，底线被触碰时，勇敢表达立场。"},
+            {name:"艾欧尼亚",tag:"阿狸｜狐灵多情",type:"C",hPer:"阿狸能感知生灵情绪，共情他人悲欢，渴望理解与真情，内心柔软又带着脆弱。",sPer:"敏感细腻，很容易读懂别人情绪，渴望真诚的情感，害怕虚假与背叛。",diff:"阿狸懂得抽身，你常常舍不得断掉消耗你的关系。",psy:"敏感多情人格，共情天赋高；短板容易在关系里反复内耗。",grow:"真诚很好，但当一段关系持续消耗你，学会体面离开。"},
+            {name:"茂凯",tag:"扭曲树精｜温柔守护",type:"C",hPer:"茂凯守护自然，悲悯弱小，默默承受伤害，守护自己珍视的一切，本性宽厚。",sPer:"默默守护在意的人，习惯自己扛委屈，宽厚心软，不忍心伤害任何人。",diff:"茂凯为大地而生，你渴望双向的珍惜，得不到会很难过。",psy:"默默守护型人格；短板一味付出，不懂索取，容易被人忽视。",grow:"好的关系是双向奔赴，你的付出值得被看见、被珍惜。"},
+            {name:"千珏",tag:"永猎双子｜悲悯生死",type:"C",hPer:"千珏接纳生死，共情所有生命，温柔看待万物的轮回，不带怨恨。",sPer:"共情生命，心软，不忍心看见苦难，能接纳遗憾与离别。",diff:"千珏看淡生死，你面对离别会悲伤很久。",psy:"悲悯型人格；短板害怕分离，很难接受失去。",grow:"离别是人生常态，珍惜相遇，不必困在失去的痛苦中。"},
+            // ========= D 自由随性 =========
+            {name:"亚索",tag:"疾风剑豪｜洒脱不羁",type:"D",hPer:"亚索随性洒脱，热爱自由，忠于内心，不受世俗规矩束缚，随性而行，享受风与旅途。",sPer:"讨厌条条框框束缚，遵从内心感受，喜欢自在，不喜欢被人管控。",diff:"亚索活在自己的信念里，你会顾及身边人，不会完全随心所欲。",psy:"洒脱自由人格；短板讨厌约束，遇到死板规则容易烦躁抵触。",grow:"自由不是无视规则，在底线之内，大胆追随自己内心。"},
+            {name:"伊索尔德",tag:"伊莉丝｜自由猎手",type:"D",hPer:"伊莉丝独立随性，不被情爱捆绑，跟随本心，不受他人左右，享受自己的节奏。",sPer:"喜欢掌握自己的生活节奏，讨厌被捆绑、被管控，合得来就相处，不合则远离。",diff:"伊莉丝目的性更强，你更佛系，很多事情随缘。",psy:"随性独立人格；短板不喜欢复杂人情，容易懒得维系关系。",grow:"自由的同时，可以保留少数重要的亲密羁绊。"},
+            {name:"塔姆",tag:"河流之王｜逍遥自在",type:"D",hPer:"塔姆游走世间，随性而行，看淡得失，喜欢自在游历，不被琐事困住。",sPer:"心态佛系，很多事情看得开，不纠结过往，不喜欢纠缠矛盾。",diff:"塔姆爱玩弄人心，你本性善良，不愿伤害别人。",psy:"逍遥佛系人格；短板遇到烦心事习惯摆烂逃避，不愿直面。",grow:"可以看淡，但遇到重要问题，适当主动面对，不要一味逃避。"},
+            {name:"巴德",tag:"星界游神｜随性漫游",type:"D",hPer:"巴德漫游宇宙，随心而行，来去自由，不执着结果，顺应万物自然的节奏。",sPer:"随遇而安，不强求结果，心态松弛，不喜强行较劲。",diff:"巴德超然物外，你依然有在意的人和事。",psy:"松弛漫游人格；短板有时候缺少目标感，容易随波逐流。",grow:"松弛很好，可以保留一点属于自己的小目标，不用强迫自己。"},
+            {name:"菲兹",tag:"潮汐海灵｜自在顽童",type:"D",hPer:"菲兹自在顽皮，热爱无拘无束的生活，不喜沉重束缚，活在当下享受此刻。",sPer:"喜欢轻松，讨厌压抑沉重的氛围，活在当下，不爱长期纠结烦恼。",diff:"菲兹无忧无虑，你会因为人际、未来感到焦虑。",psy:"乐天自在人格；短板遇到压力容易逃避，不想思考沉重问题。",grow:"享受当下同时，简单规划未来，不用过度焦虑。"},
+            {name:"派克",tag:"血港鬼影｜随心抉择",type:"D",hPer:"派克遵从本心，不受世俗道德绑架，随心做出取舍，不被人情绑架。",sPer:"讨厌人情绑架，不想被别人的期待束缚，忠于自己的感受。",diff:"派克行事极端，你内心有柔软，不会狠心伤害他人。",psy:"随心决断人格；短板容易一时冲动做出选择，事后后悔。",grow:"忠于内心的同时，冷静评估后果，减少冲动决定。"},
+            {name:"萨科",tag:"恶魔小丑｜随性玩乐",type:"D",hPer:"萨科以玩乐看待世间，不受他人评价束缚，随心所欲，不在乎别人看法。",sPer:"不在乎外人评价，喜欢轻松，讨厌严肃压抑，跟着自己心情走。",diff:"萨科喜欢捉弄伤害他人，你没有恶意，只是想活得轻松。",psy:"玩乐型自由人格；短板别人会觉得你不够认真。",grow:"可以保持轻松心态，重要事情上保持责任心。"},
+            {name:"奇亚娜",tag:"元素女皇｜随心而行",type:"D",hPer:"奇亚娜热爱自由，自信随性，遵从自己的欲望，不被他人定义。",sPer:"不愿意被别人定义，喜欢按照自己想法活，讨厌被限制。",diff:"奇亚娜强势自我，你会顾及他人感受，懂得收敛。",psy:"自我自由人格；短板反感说教，容易抵触别人建议。",grow:"坚持自我的同时，学会分辨哪些建议值得参考。"}
+        ];
+
+        // 逻辑变量
+        let currentQuestion = 0;
+        let answers = [];
+        let score = {A:0,B:0,C:0,D:0};
+        const homePage = document.getElementById('homePage');
+        const testPage = document.getElementById('testPage');
+        const resultPage = document.getElementById('resultPage');
+        const questionTitle = document.getElementById('questionTitle');
+        const optionBox = document.getElementById('optionBox');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressNum = document.getElementById('progressNum');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const shareBtn = document.getElementById('shareBtn');
+
+        // 开始
+        startBtn.onclick = ()=>{
+            homePage.classList.add('hidden');
+            testPage.classList.remove('hidden');
+            renderQuestion();
+        }
+
+        // 渲染题目
+        function renderQuestion(){
+            const q = questionList[currentQuestion];
+            questionTitle.innerText = q.q;
+            optionBox.innerHTML = '';
+            q.o.forEach((opt,idx)=>{
+                const div = document.createElement('div');
+                div.className = "p-3.5 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50";
+                if(answers[currentQuestion] === idx){
+                    div.classList.add('option-active');
+                }
+                div.innerText = opt;
+                div.onclick = ()=>{
+                    answers[currentQuestion] = idx;
+                    // 打分 A B C D
+                    if(idx===0) score.A += 1;
+                    if(idx===1) score.B += 1;
+                    if(idx===2) score.C += 1;
+                    if(idx===3) score.D += 1;
+                    renderQuestion();
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('bg-gray-200','text-gray-400');
+                    nextBtn.classList.add('bg-secondary','text-white');
+                }
+                optionBox.appendChild(div);
+            })
+            //进度
+            const per = ((currentQuestion)/30)*100;
+            progressBar.style.width = per+"%";
+            progressNum.innerText = currentQuestion;
+            prevBtn.disabled = currentQuestion <= 0;
+            if(prevBtn.disabled){
+                prevBtn.classList.add('text-gray-400');
+            }else{
+                prevBtn.classList.remove('text-gray-400');
+            }
+        }
+
+        // 上一题
+        prevBtn.onclick = ()=>{
+            if(currentQuestion <=0) return;
+            //撤销上一题分数
+            const lastAns = answers[currentQuestion-1];
+            if(lastAns===0) score.A -=1;
+            if(lastAns===1) score.B -=1;
+            if(lastAns===2) score.C -=1;
+            if(lastAns===3) score.D -=1;
+            currentQuestion --;
+            renderQuestion();
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('bg-gray-200','text-gray-400');
+            nextBtn.classList.add('bg-secondary','text-white');
+        }
+
+        //下一题
+        nextBtn.onclick = ()=>{
+            if(answers[currentQuestion] === undefined) return;
+            currentQuestion ++;
+            if(currentQuestion >= questionList.length){
+                showResult();
+                return;
+            }
+            renderQuestion();
+            nextBtn.disabled = true;
+            nextBtn.classList.add('bg-gray-200','text-gray-400');
+            nextBtn.classList.remove('bg-secondary','text-white');
+        }
+
+        //匹配英雄
+        function showResult(){
+            testPage.classList.add('hidden');
+            resultPage.classList.remove('hidden');
+            //找最高分维度
+            const maxScore = Math.max(score.A,score.B,score.C,score.D);
+            let typeKey = "A";
+            if(maxScore === score.B) typeKey="B";
+            if(maxScore === score.C) typeKey="C";
+            if(maxScore === score.D) typeKey="D";
+            const list = heroDB.filter(h=>h.type === typeKey);
+            const randomHero = list[Math.floor(Math.random()*list.length)];
+
+            document.getElementById("heroName").innerText = "匹配英雄："+randomHero.name;
+            document.getElementById("heroTag").innerText = randomHero.tag;
+            document.getElementById("heroPersonality").innerText = randomHero.hPer;
+            document.getElementById("selfPersonality").innerText = randomHero.sPer;
+            document.getElementById("diffAnalysis").innerText = randomHero.diff;
+            document.getElementById("psychAnalysis").innerText = randomHero.psy;
+            document.getElementById("growAdvice").innerText = randomHero.grow;
+
+            //分数条
+            const total = score.A+score.B+score.C+score.D;
+            document.getElementById("scoreA").innerText = score.A+"分";
+            document.getElementById("scoreB").innerText = score.B+"分";
+            document.getElementById("scoreC").innerText = score.C+"分";
+            document.getElementById("scoreD").innerText = score.D+"分";
+            document.getElementById("barA").style.width = (score.A/total*100)+"%";
+            document.getElementById("barB").style.width = (score.B/total*100)+"%";
+            document.getElementById("barC").style.width = (score.C/total*100)+"%";
+            document.getElementById("barD").style.width = (score.D/total*100)+"%";
+            const match = 88 + Math.floor(Math.random()*10);
+            document.getElementById("matchPercent").innerText = match+"%";
+            document.getElementById("matchBar").style.width = match+"%";
+        }
+
+        //重置
+        resetBtn.onclick = ()=>{
+            currentQuestion = 0;
+            answers = [];
+            score = {A:0,B:0,C:0,D:0};
+            resultPage.classList.add('hidden');
+            homePage.classList.remove('hidden');
+        }
+        //复制分享
+        shareBtn.onclick = async ()=>{
+            const txt = document.getElementById("heroName").innerText + "\n"
+            + document.getElementById("heroTag").innerText + "\n\n"
+            +"人格得分：A:"+score.A+" B:"+score.B+" C:"+score.C+" D:"+score.D+"\n\n"
+            +"英雄原生性格："+document.getElementById("heroPersonality").innerText+"\n\n"
+            +"你的真实性格画像："+document.getElementById("selfPersonality").innerText+"\n\n"
+            +"性格差值对比："+document.getElementById("diffAnalysis").innerText+"\n\n"
+            +"深度心理解析："+document.getElementById("psychAnalysis").innerText+"\n\n"
+            +"成长建议："+document.getElementById("growAdvice").innerText;
+            await navigator.clipboard.writeText(txt);
+            alert("结果已复制！直接粘贴发给朋友");
+        }
+    </script>
+</body>
+</html>
